@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+<body>
+  <canvas id="myCanvas" width="480" height="480">
+     <script>
+        var secAngle = 0;
+        var minAngle = 0;
+        var hourAngle = 0;
+        var images = {};
+        var loadedImages = 0;
+        var numImages = 0;
+      function loadImages(sources, callback) {
+        
+        // get num of sources
+        for(var src in sources) {
+          numImages++;
+        }
+        for(var src in sources) {
+          images[src] = new Image();
+          images[src].onload = function() {
+            if(++loadedImages >= numImages) {
+              callback(images);
+            }
+          };
+          images[src].src = sources[src];
+        }
+      }
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+
+      var sources = {
+        clock:"face.svg"
+      };
+
+      loadImages(sources, function(images) {
+        synWithComputer();
+        setInterval(synWithComputer, 5000);
+        setInterval(clockTick, 100);
+      });
+
+      function synWithComputer(){
+          var timestamp = new Date();
+          var hour = timestamp.getHours();
+          var minutes = timestamp.getMinutes();
+          var seconds = timestamp.getSeconds();
+
+          if(hour>12)
+          {
+              hour -= 12;
+          }
+          var tempSecAngle = seconds * (6);
+          var tempMinAngle = (minutes  + (seconds/60)) * (6);
+          var tempHourAngle = (hour + ((minutes/60) + (seconds/3600))) * (30);
+
+          secAngle = tempSecAngle - 90;
+          minAngle = tempMinAngle - 90;
+          hourAngle = tempHourAngle - 90;
+      }
+
+      function clockTick(){
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(images.clock, 0, 0, 480, 480);
+
+        secAngle = secAngle + (360/600);
+        minAngle = minAngle + (360/36000);
+        hourAngle = hourAngle + (360/432000);
+        
+        if(secAngle >= 360)
+        {
+            secAngle = 0;
+        }
+        if(minAngle >= 360)
+        {
+            minAngle = 0;
+        }
+        if(hourAngle >= 360)
+        {
+            hourAngle = 0;
+        }
+
+        drawSecond(secAngle);
+        drawMinute(minAngle);
+        drawHour(hourAngle);
+
+        midPoint();
+      }
+
+      function midPoint(){
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var radius = 10;
+
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+        context.fillStyle = 'green';
+        context.fill();
+        context.lineWidth = 5;
+        context.strokeStyle = '#003300';
+        context.stroke();
+      }
+
+      function drawSecond(secAngle){
+        var radius = 140;
+        secAngle *= Math.PI/180;
+        context.beginPath();
+        context.moveTo(240,240);
+        context.lineTo(240 + radius * Math.cos(secAngle),240 + radius * Math.sin(secAngle));
+        context.lineWidth=2;
+        context.stroke();
+      }
+      function drawMinute(minAngle){
+        var radius = 120;
+        minAngle *= Math.PI/180;
+        context.beginPath();
+        context.moveTo(240,240);
+        context.lineTo(240 + radius * Math.cos(minAngle),240 + radius * Math.sin(minAngle));
+        context.lineWidth=5;
+        context.stroke();
+      }
+
+      function drawHour(hourAngle){
+        var radius = 80;
+        hourAngle *= Math.PI/180;
+        context.beginPath();
+        context.moveTo(240,240);
+        context.lineTo(240 + radius * Math.cos(hourAngle),240 + radius * Math.sin(hourAngle));
+        context.lineWidth=10;
+        context.stroke();
+      }
+
+      
+
+    </script>
+  </canvas>
+</body>
+</html>
